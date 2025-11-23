@@ -24,7 +24,7 @@ async def main():
         await APIServer(
             downloader.parameter,
             downloader.database,
-        ).run_server(SERVER_HOST, SERVER_PORT)
+        ).run_server(SERVER_HOST, SERVER_PORT, log_level="debug")
 
 
 if __name__ == "__main__":
