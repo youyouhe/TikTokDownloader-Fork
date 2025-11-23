@@ -18,7 +18,7 @@ async def main():
         print("访问 http://127.0.0.1:5555/redoc 查看API文档")
         print("按 Ctrl+C 停止服务器")
 
-        from .main_server import APIServer
+        from src.application.main_server import APIServer
         from src.custom import SERVER_HOST, SERVER_PORT
 
         await APIServer(
