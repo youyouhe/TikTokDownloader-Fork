@@ -85,17 +85,62 @@ class APIServer(TikTok):
         port=SERVER_PORT,
         log_level="info",
     ):
+        from fastapi import Request
+        import time
+
         self.server = FastAPI(
             debug=VERSION_BETA,
             title="DouK-Downloader",
             version=__VERSION__,
         )
+
+        # 添加请求日志中间件
+        @self.server.middleware("http")
+        async def log_requests(request: Request, call_next):
+            start_time = time.time()
+
+            # 记录请求开始
+            print(f"\n🔥 [{time.strftime('%Y-%m-%d %H:%M:%S')}] {request.method} {request.url}")
+            print(f"📍 Client: {request.client.host if request.client else 'unknown'}")
+            print(f"🌐 User-Agent: {request.headers.get('user-agent', 'unknown')}")
+
+            # 对于POST请求，尝试记录请求体
+            if request.method == "POST":
+                try:
+                    body = await request.body()
+                    if body:
+                        content = body.decode('utf-8')
+                        # 只记录前200个字符，避免太长
+                        preview = content[:200] + "..." if len(content) > 200 else content
+                        print(f"📤 Request Body: {preview}")
+                except Exception as e:
+                    print(f"⚠️ Could not read request body: {e}")
+
+            # 处理请求
+            try:
+                response = await call_next(request)
+                process_time = time.time() - start_time
+
+                # 记录响应
+                print(f"✅ Status: {response.status_code}")
+                print(f"⏱️ Time: {process_time:.3f}s")
+                print("-" * 80)
+
+                return response
+            except Exception as e:
+                process_time = time.time() - start_time
+                print(f"❌ Error: {e}")
+                print(f"⏱️ Failed after: {process_time:.3f}s")
+                print("-" * 80)
+                raise
+
         self.setup_routes()
         config = Config(
             self.server,
             host=host,
             port=port,
             log_level=log_level,
+            access_log=True,  # 启用访问日志
         )
         server = Server(config)
         await server.serve()
