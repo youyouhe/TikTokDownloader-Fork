@@ -11,6 +11,7 @@ from src.application import TikTokDownloader
 
 def setup_logging():
     """设置详细的日志记录"""
+    # 设置根日志级别
     logging.basicConfig(
         level=logging.DEBUG,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -20,10 +21,12 @@ def setup_logging():
         ]
     )
 
-    # 设置第三方库的日志级别
-    logging.getLogger("httpx").setLevel(logging.DEBUG)
-    logging.getLogger("uvicorn").setLevel(logging.DEBUG)
-    logging.getLogger("fastapi").setLevel(logging.DEBUG)
+    # 设置关键库的日志级别
+    logging.getLogger("httpx").setLevel(logging.DEBUG)  # HTTP请求日志
+    logging.getLogger("uvicorn").setLevel(logging.DEBUG)  # Uvicorn服务器日志
+    logging.getLogger("uvicorn.access").setLevel(logging.DEBUG)  # Uvicorn访问日志
+    logging.getLogger("fastapi").setLevel(logging.DEBUG)  # FastAPI框架日志
+    logging.getLogger("src").setLevel(logging.DEBUG)  # 应用程序日志
 
 
 async def main():
@@ -53,10 +56,12 @@ async def main():
 
             from src.application.main_server import APIServer
             from src.custom import SERVER_HOST, SERVER_PORT
+            import uvicorn
 
             logger.info(f"服务器地址: {SERVER_HOST}:{SERVER_PORT}")
             logger.info("正在启动API服务器...")
 
+            # 使用内置方法启动服务器
             await APIServer(
                 downloader.parameter,
                 downloader.database,
